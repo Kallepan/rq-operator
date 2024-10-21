@@ -13,8 +13,7 @@ variables:
 stages:
   - test
   - prepare
-  - build_image
-  - build_bundle
+  - build
 
 .rules-template:
   rules:
@@ -65,7 +64,7 @@ build_bundle_builder:
 # Build the operator image
 build_image:
   extends: .rules-template
-  stage: build_image
+  stage: build
   image: docker:cli
   before_script:
     - docker info
@@ -78,7 +77,7 @@ build_image:
 # Build the operator bundle
 build_bundle:
   extends: .rules-template
-  stage: build_bundle
+  stage: build
   image: $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION
   before_script:
     - update-ca-certificates
