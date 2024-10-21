@@ -1,0 +1,22 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/go
+{
+  "name": "Go",
+  "image": "mcr.microsoft.com/devcontainers/go:1-1.21-bookworm",
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go", "eamodio.gitlens"],
+      "settings": {
+        "[go]": {
+          "editor.defaultFormatter": "golang.go",
+          "editor.insertSpaces": false,
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+          }
+        }
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
+}
