@@ -73,7 +73,7 @@ build_image:
 
 build_bundle:
   extends: .docker-dind-template  
-  stage: build
+  stage: build_bundle
   image: $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION
   before_script:
     - update-ca-certificates
