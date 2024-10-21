@@ -1,0 +1,46 @@
+variables:
+  GO_VERSION: 1.21.12
+
+  # Docker
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_VERIFY: "1"
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_CERT_PATH: "/certs/client"
+
+stages:
+  - test
+  - build
+
+# Ugly workaround to get docker:dind working
+.docker-dind-template:
+  services:
+    - name: docker:dind
+      alias: docker
+      command:
+        - /bin/sh
+        - -c
+        - "update-ca-certificates && dockerd-entrypoint.sh || exit"
+
+test:
+  stage: test
+  image: golang:${GO_VERSION}
+  script:
+    - cd operator
+    - go test -v ./...
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build_image:
+  extends: .docker-dind-template
+  stage: build
+  image: docker:cli
+  before_script:
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - cd operator
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
+  
