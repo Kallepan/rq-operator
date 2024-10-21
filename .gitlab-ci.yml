@@ -21,14 +21,13 @@ stages:
     - if: $CI_COMMIT_TAG
 
 # Ugly workaround to get docker:dind working
-.docker-dind-template:
-  services:
-    - name: docker:dind
-      alias: docker
-      command:
-        - /bin/sh
-        - -c
-        - "update-ca-certificates && dockerd-entrypoint.sh || exit"
+services:
+  - name: docker:dind
+    alias: docker
+    command:
+      - /bin/sh
+      - -c
+      - "update-ca-certificates && dockerd-entrypoint.sh || exit"
 
 
 test:
@@ -45,9 +44,7 @@ test:
 
 # Build the builder image
 build_bundle_builder:
-  extends:
-    - .docker-dind-template
-    - .rules-template
+  extends: .rules-template
   stage: prepare
   image: docker:cli
   before_script:
@@ -66,9 +63,7 @@ build_bundle_builder:
       fi
 
 build_image:
-  extends:
-    - .docker-dind-template
-    - .rules-template
+  extends: .rules-template
   stage: build_image
   image: docker:cli
   before_script:
@@ -81,9 +76,7 @@ build_image:
 
 
 build_bundle:
-  extends:
-    - .docker-dind-template
-    - .rules-template
+  extends: .rules-template
   stage: build_bundle
   image: $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION
   before_script:
