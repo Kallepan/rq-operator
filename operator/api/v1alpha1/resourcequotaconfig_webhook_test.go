@@ -18,12 +18,40 @@ package v1alpha1
 
 import (
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 var _ = Describe("ResourceQuotaConfig Webhook", func() {
 
 	Context("When creating ResourceQuotaConfig under Defaulting Webhook", func() {
 		It("Should fill in the default value if a required field is empty", func() {
+
+			rqc := &ResourceQuotaConfig{
+				Spec: ResourceQuotaConfigSpec{},
+			}
+
+			rqc.Default()
+
+			Expect(*rqc.Spec.ResourceQuotaName).To(Equal("rq-default"))
+			Expect(rqc.Spec.ResourceQuotaLabels).To(Equal(map[string]string{"operator": "rq-operator"}))
+			Expect(rqc.Spec.ResourceQuotaSpec).To(Equal(corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("2Gi"),
+			}))
+		})
+
+	})
+
+	Context("When creating ResourceQuotaConfig under Validating Webhook", func() {
+		It("Should deny if a required field is empty", func() {
+
+			// TODO(user): Add your logic here
+
+		})
+
+		It("Should admit if all required fields are provided", func() {
 
 			// TODO(user): Add your logic here
 

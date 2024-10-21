@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,17 +26,41 @@ import (
 
 // ResourceQuotaConfigSpec defines the desired state of ResourceQuotaConfig
 type ResourceQuotaConfigSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Name to apply to the resource quota
+	// By default it will be "rq-default"
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ResourceQuotaName *string `json:"resourceQuotaName,omitempty"`
 
-	// Foo is an example field of ResourceQuotaConfig. Edit resourcequotaconfig_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Labels to apply to the resource quota
+	// By default it will be "operator: rq-operator"
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ResourceQuotaLabels map[string]string `json:"resourceQuotaLabels,omitempty"`
+
+	// Labels for namespace selection by the operator to apply resource quotas.
+	// By default (nil) it will match all namespaces. (This may not be a good idea)
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
+
+	// Resourcequota spec to apply by default
+	// By default it will apply cpu: 2, memory: 2Gi
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ResourceQuotaSpec corev1.ResourceList `json:"resourceQuotaSpec,omitempty"`
 }
 
 // ResourceQuotaConfigStatus defines the observed state of ResourceQuotaConfig
 type ResourceQuotaConfigStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Represents the latest available observations of a resource's current state.
+	// ResourceQuotaConfig.status.conditions.type are: "Ready", "Progressing", "Degraded"
+	// ResourceQuotaConfig.status.conditions.status are: "True", "False", "Unknown"
+	// ResourceQuotaConfig.status.conditions.reason is a brief machine-readable explanation for the condition's last transition.
+	// ResourceQuotaConfig.status.conditions.Message is a human-readable message indicating details about the transition.
+
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 //+kubebuilder:object:root=true
