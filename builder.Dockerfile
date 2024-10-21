@@ -20,6 +20,7 @@ FROM docker:cli
 
 RUN apk add --no-cache \
     make \
+    curl \
     bash
 
 COPY --from=base /usr/local/go /usr/local/go
