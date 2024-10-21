@@ -23,4 +23,5 @@ RUN apk add --no-cache \
     bash
 
 COPY --from=base /usr/local/go /usr/local/go
-RUN export PATH=$PATH:/usr/local/go/bin
+
+ENV PATH=$PATH:/usr/local/go/bin
