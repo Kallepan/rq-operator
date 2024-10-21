@@ -1,0 +1,328 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "homelab.server.home/v1alpha1",
+          "kind": "ResourceQuotaConfig",
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/managed-by": "kustomize",
+              "app.kubernetes.io/name": "operator"
+            },
+            "name": "resourcequotaconfig-sample"
+          },
+          "spec": null
+        }
+      ]
+    capabilities: Basic Install
+    createdAt: "2024-10-21T18:16:13Z"
+    operators.operatorframework.io/builder: operator-sdk-v1.37.0
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
+  name: operator.v0.0.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: ResourceQuotaConfig is the Schema for the resourcequotaconfigs
+        API
+      displayName: Resource Quota Config
+      kind: ResourceQuotaConfig
+      name: resourcequotaconfigs.homelab.server.home
+      specDescriptors:
+      - description: |-
+          Labels for namespace selection by the operator to apply resource quotas.
+          By default (nil) it will match all namespaces. (This may not be a good idea)
+        displayName: Namespace Selector
+        path: namespaceSelector
+      - description: |-
+          Labels to apply to the resource quota
+          By default it will be "operator: rq-operator"
+        displayName: Resource Quota Labels
+        path: resourceQuotaLabels
+      - description: |-
+          Name to apply to the resource quota
+          By default it will be "rq-default"
+        displayName: Resource Quota Name
+        path: resourceQuotaName
+      - description: |-
+          Resourcequota spec to apply by default
+          By default it will apply cpu: 2, memory: 2Gi
+        displayName: Resource Quota Spec
+        path: resourceQuotaSpec
+      statusDescriptors:
+      - displayName: Conditions
+        path: conditions
+      version: v1alpha1
+  description: Resource Quota Operator
+  displayName: RQ Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - resourcequotas
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - homelab.server.home
+          resources:
+          - resourcequotaconfigs
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - homelab.server.home
+          resources:
+          - resourcequotaconfigs/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - homelab.server.home
+          resources:
+          - resourcequotaconfigs/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - authentication.k8s.io
+          resources:
+          - tokenreviews
+          verbs:
+          - create
+        - apiGroups:
+          - authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+          verbs:
+          - create
+        serviceAccountName: operator-controller-manager
+      deployments:
+      - label:
+          app.kubernetes.io/managed-by: kustomize
+          app.kubernetes.io/name: operator
+          control-plane: controller-manager
+        name: operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              annotations:
+                kubectl.kubernetes.io/default-container: manager
+              labels:
+                control-plane: controller-manager
+            spec:
+              containers:
+              - args:
+                - --health-probe-bind-address=:8081
+                - --metrics-bind-address=127.0.0.1:8080
+                - --leader-elect
+                command:
+                - /manager
+                image: controller:latest
+                livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
+                name: manager
+                ports:
+                - containerPort: 9443
+                  name: webhook-server
+                  protocol: TCP
+                readinessProbe:
+                  httpGet:
+                    path: /readyz
+                    port: 8081
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+                volumeMounts:
+                - mountPath: /tmp/k8s-webhook-server/serving-certs
+                  name: cert
+                  readOnly: true
+              - args:
+                - --secure-listen-address=0.0.0.0:8443
+                - --upstream=http://127.0.0.1:8080/
+                - --logtostderr=true
+                - --v=0
+                image: gcr.io/kubebuilder/kube-rbac-proxy:v0.16.0
+                name: kube-rbac-proxy
+                ports:
+                - containerPort: 8443
+                  name: https
+                  protocol: TCP
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 5m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+              securityContext:
+                runAsNonRoot: true
+              serviceAccountName: operator-controller-manager
+              terminationGracePeriodSeconds: 10
+              volumes:
+              - name: cert
+                secret:
+                  defaultMode: 420
+                  secretName: webhook-server-cert
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        serviceAccountName: operator-controller-manager
+    strategy: deployment
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - resourcequota
+  links:
+  - name: Operator
+    url: https://operator.domain
+  maintainers:
+  - email: kajeepan.kandeepan@gmail.com
+    name: Kajeepan Kandeepan
+  maturity: alpha
+  provider:
+    name: Homelab
+    url: homelab.server.home
+  version: 0.0.1
+  webhookdefinitions:
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    conversionCRDs:
+    - resourcequotaconfigs.homelab.server.home
+    deploymentName: operator-controller-manager
+    generateName: cresourcequotaconfigs.kb.io
+    sideEffects: None
+    targetPort: 9443
+    type: ConversionWebhook
+    webhookPath: /convert
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: operator-controller-manager
+    failurePolicy: Fail
+    generateName: mresourcequotaconfig.kb.io
+    rules:
+    - apiGroups:
+      - homelab.server.home
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - resourcequotaconfigs
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-homelab-server-home-v1alpha1-resourcequotaconfig
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: operator-controller-manager
+    failurePolicy: Fail
+    generateName: vresourcequotaconfig.kb.io
+    rules:
+    - apiGroups:
+      - homelab.server.home
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - resourcequotaconfigs
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-homelab-server-home-v1alpha1-resourcequotaconfig

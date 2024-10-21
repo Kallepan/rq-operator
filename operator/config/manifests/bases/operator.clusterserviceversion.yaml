@@ -1,0 +1,73 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: ResourceQuotaConfig is the Schema for the resourcequotaconfigs
+        API
+      displayName: Resource Quota Config
+      kind: ResourceQuotaConfig
+      name: resourcequotaconfigs.homelab.server.home
+      specDescriptors:
+      - description: |-
+          Labels for namespace selection by the operator to apply resource quotas.
+          By default (nil) it will match all namespaces. (This may not be a good idea)
+        displayName: Namespace Selector
+        path: namespaceSelector
+      - description: |-
+          Labels to apply to the resource quota
+          By default it will be "operator: rq-operator"
+        displayName: Resource Quota Labels
+        path: resourceQuotaLabels
+      - description: |-
+          Name to apply to the resource quota
+          By default it will be "rq-default"
+        displayName: Resource Quota Name
+        path: resourceQuotaName
+      - description: |-
+          Resourcequota spec to apply by default
+          By default it will apply cpu: 2, memory: 2Gi
+        displayName: Resource Quota Spec
+        path: resourceQuotaSpec
+      statusDescriptors:
+      - displayName: Conditions
+        path: conditions
+      version: v1alpha1
+  description: Resource Quota Operator
+  displayName: RQ Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - resourcequota
+  links:
+  - name: Operator
+    url: https://operator.domain
+  maintainers:
+  - email: kajeepan.kandeepan@gmail.com
+    name: Kajeepan Kandeepan
+  maturity: alpha
+  provider:
+    name: Homelab
+    url: homelab.server.home
+  version: 0.0.0
