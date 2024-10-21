@@ -7,9 +7,14 @@ variables:
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_CERT_PATH: "/certs/client"
 
+  # Build
+  BUILDER_VERSION: "1.0.0"
+
 stages:
   - test
-  - build
+  - prepare
+  - build_image
+  - build_bundle
 
 # Ugly workaround to get docker:dind working
 .docker-dind-template:
@@ -20,6 +25,28 @@ stages:
         - /bin/sh
         - -c
         - "update-ca-certificates && dockerd-entrypoint.sh || exit"
+
+# Build the builder image
+build_bundle_builder:
+  extends: .docker-dind-template
+  stage: prepare
+  image: docker:cli
+  before_script:
+    - update-ca-certificates
+    # Docker login
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - |
+      if ! docker pull $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION; then
+        # Build and push the builder image
+        docker build -f builder.Dockerfile -t $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION .
+        docker push $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION
+      else
+        echo "Builder image already exists. Skipping build."
+      fi
+  rules:
+    - if: $CI_COMMIT_TAG
 
 test:
   stage: test
@@ -32,15 +59,26 @@ test:
 
 build_image:
   extends: .docker-dind-template
-  stage: build
+  stage: build_image
   image: docker:cli
   before_script:
     - docker info
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - cd operator
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY_IMAGE/operator:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE/operator:$CI_COMMIT_TAG
   rules:
     - if: $CI_COMMIT_TAG
-  
+
+build_bundle:
+  extends: .docker-dind-template  
+  stage: build
+  image: $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION
+  before_script:
+    - update-ca-certificates
+  script:
+    - cd rq-operator
+    - make bundle-build bundle-push BUNDLE_IMG=$CI_REGISTRY_IMAGE/rq-operator-bundle:$CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
