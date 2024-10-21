@@ -82,5 +82,5 @@ build_bundle:
   before_script:
     - update-ca-certificates
   script:
-    - cd rq-operator
+    - cd operator
     - make bundle-build bundle-push BUNDLE_IMG=$CI_REGISTRY_IMAGE/rq-operator-bundle:$CI_COMMIT_TAG
