@@ -18,5 +18,9 @@ RUN curl -O https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
 # Create Final docker image
 FROM docker:cli
 
+RUN apk add --no-cache \
+    make \
+    bash
+
 COPY --from=base /usr/local/go /usr/local/go
 RUN export PATH=$PATH:/usr/local/go/bin
