@@ -17,10 +17,8 @@ stages:
   - build_bundle
 
 .rules-template:
-  # rules:
-  #   - if: $CI_COMMIT_TAG
-  variables:
-    VERSION: 0.0.1
+  rules:
+    - if: $CI_COMMIT_TAG
 
 # Ugly workaround to get docker:dind working
 .docker-dind-template:
@@ -31,6 +29,16 @@ stages:
         - /bin/sh
         - -c
         - "update-ca-certificates && dockerd-entrypoint.sh || exit"
+
+
+test:
+  extends: .rules-template
+  stage: test
+  image: golang:${GO_VERSION}
+  script:
+    - cd operator
+    - make test
+
 
 # Build the builder image
 build_bundle_builder:
@@ -54,15 +62,6 @@ build_bundle_builder:
         echo "Builder image already exists. Skipping build."
       fi
 
-test:
-  extends: .rules-template
-  stage: test
-  image: golang:${GO_VERSION}
-  script:
-    - cd operator
-    - make test
-
-
 build_image:
   extends:
     - .docker-dind-template
@@ -74,8 +73,8 @@ build_image:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - cd operator
-    - docker build -t $CI_REGISTRY_IMAGE/operator:$VERSION .
-    - docker push $CI_REGISTRY_IMAGE/operator:$VERSION
+    - docker build -t $CI_REGISTRY_IMAGE/operator:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE/operator:$CI_COMMIT_TAG
 
 
 build_bundle:
@@ -88,4 +87,4 @@ build_bundle:
     - update-ca-certificates
   script:
     - cd rq-operator
-    - make bundle-build bundle-push BUNDLE_IMG=$CI_REGISTRY_IMAGE/rq-operator-bundle:$VERSION
+    - make bundle-build bundle-push BUNDLE_IMG=$CI_REGISTRY_IMAGE/rq-operator-bundle:$CI_COMMIT_TAG
