@@ -16,3 +16,14 @@ operator-sdk create api --group homelab --version v1alpha1 --kind ResourceQuotaC
 # Webhook
 operator-sdk create webhook --group homelab --version v1alpha1 --kind ResourceQuotaConfig --defaulting
 ```
+
+## Build
+
+```bash
+cd operator
+
+make generate
+make manifests
+```
+
+All further steps are done in the CI/CD pipeline.
