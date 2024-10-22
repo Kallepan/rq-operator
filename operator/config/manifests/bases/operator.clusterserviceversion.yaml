@@ -67,6 +67,7 @@ spec:
   - email: kajeepan.kandeepan@gmail.com
     name: Kajeepan Kandeepan
   maturity: alpha
+  minKubeVersion: 1.31.0
   provider:
     name: Homelab
     url: homelab.server.home
