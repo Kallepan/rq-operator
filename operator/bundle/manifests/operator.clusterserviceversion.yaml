@@ -18,7 +18,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2024-10-21T18:16:13Z"
+    createdAt: "2024-10-22T18:22:10Z"
     operators.operatorframework.io/builder: operator-sdk-v1.37.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
   name: operator.v0.0.1
@@ -270,6 +270,14 @@ spec:
   - email: kajeepan.kandeepan@gmail.com
     name: Kajeepan Kandeepan
   maturity: alpha
+  minKubeVersion: 1.31.0
+  nativeAPIs:
+  - group: ""
+    kind: Namespace
+    version: v1
+  - group: ""
+    kind: ResourceQuota
+    version: v1
   provider:
     name: Homelab
     url: homelab.server.home

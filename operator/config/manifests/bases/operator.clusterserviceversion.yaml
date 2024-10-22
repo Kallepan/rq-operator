@@ -68,6 +68,13 @@ spec:
     name: Kajeepan Kandeepan
   maturity: alpha
   minKubeVersion: 1.31.0
+  nativeAPIs:
+  - group: ""
+    kind: Namespace
+    version: v1
+  - group: ""
+    kind: ResourceQuota
+    version: v1
   provider:
     name: Homelab
     url: homelab.server.home
