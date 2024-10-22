@@ -46,6 +46,7 @@ build_bundle_builder:
   image: docker:cli
   before_script:
     - update-ca-certificates
+    - until docker info; do sleep 1; done
     # Docker login
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
@@ -64,7 +65,7 @@ build_image:
   stage: build
   image: docker:cli
   before_script:
-    - docker info
+    - until docker info; do sleep 1; done
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - cd operator
@@ -78,6 +79,7 @@ build_bundle:
   image: $CI_REGISTRY_IMAGE/builder:$BUILDER_VERSION
   before_script:
     - update-ca-certificates
+    - until docker info; do sleep 1; done
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - cd operator
