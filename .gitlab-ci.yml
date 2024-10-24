@@ -83,6 +83,6 @@ build_bundle:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - cd operator
-    - make bundle IMG=$CI_REGISTRY_IMAGE/operator:$VERSION VERSION=$CI_COMMIT_TAG
+    - make bundle IMG=$CI_REGISTRY_IMAGE/operator:$CI_COMMIT_TAG VERSION=$CI_COMMIT_TAG
     - docker build -f bundle.Dockerfile -t $CI_REGISTRY_IMAGE/operator-bundle:$CI_COMMIT_TAG .
     - docker push $CI_REGISTRY_IMAGE/operator-bundle:$CI_COMMIT_TAG
