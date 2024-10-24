@@ -38,6 +38,7 @@ test:
     - make test
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Build the builder image
 build_bundle_builder:
